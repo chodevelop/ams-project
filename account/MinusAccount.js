@@ -9,38 +9,20 @@ const { Account } = require("./Account");
  */
 
 class MinusAccount extends Account {
-    #debt;
 
-    constructor(name, password, asset, debt) {
-        super(name, password, asset);
-        this.#debt = debt;
-    }
-
-    // 부채를 조회하는 메서드
-    getDebt() {
-        return this.#debt;
+    constructor(name, number, password, asset, debt) {
+        super(name, number, password, asset);
+        this.debt = debt;
     }
 
     // 부채를 설정하는 메서드
     setDebt(newDebt) {
-        this.#debt = newDebt;
+        this.debt = newDebt;
     }
 
     // 잔고를 조회하는 메서드 (오버라이드)
     getBalance() {
-        return super.getBalance() - this.#debt;
-    }
-
-    toJSON() {
-        return JSON.stringify({
-            type: "MinusAccount",
-            name: this.name,
-            number: super.getAccountNumber(),
-            password: super.getPassword(),
-            asset: super.getAsset(),
-            debt: this.getDebt(),
-            balance: this.getBalance(),
-        })
+        return super.getBalance() - this.debt;
     }
 };
 

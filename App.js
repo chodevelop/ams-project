@@ -4,9 +4,19 @@
  * 작성자 : 조영우
  */
 
-const { accountRepository } = require("./account/AccountRepository");
+const { toString,
+    totalDeposits,
+    searchFromToBalance,
+    searchByAll,
+    searchByName,
+    searchByNumber,
+    changeName,
+    deleteAccount,
+    addAccount,
+    addMinusAccount} = require("./account/AccountRepository");
 const { input } = require("./module/pythonic-input/pythonicInput");
-
+const { databaseInitialize, databaseTerminate } = require("./database/databaseControl");
+1
 
 // 메뉴 출력
 const printMenu = function () {
@@ -16,6 +26,9 @@ const printMenu = function () {
 }
 
 const app = function () {
+    const { accounts, minusAccounts } = databaseInitialize();
+    // console.log(accounts, minusAccounts);
+
     console.log(`====================================================================`);
     console.log(`--------------     KOSTA 은행 계좌 관리 프로그램     ---------------`);
     console.log(`====================================================================`);
@@ -35,10 +48,11 @@ const app = function () {
 
                 console.log(header);
 
-                let registerInfo = [];
-                let account = null;
+
+                // let account = null;
                 const no = parseInt(input());
 
+                let registerInfo = [];
                 registerInfo.push(input("이름: "));
                 registerInfo.push(parseInt(input("비밀번호: ")));
                 registerInfo.push(parseInt(input("예수금: ")));
@@ -47,11 +61,11 @@ const app = function () {
                 }
 
                 if (no === 1) {
-                    account = accountRepository.addAccount(...registerInfo)
-                    console.log(account.name, account.getAccountNumber(), account.getAsset(), account.getBalance());
+                    const account = addAccount(...registerInfo, accounts);
+                    console.log(account.name, account.number, account.asset, account.getBalance());
                 } else {
-                    account = accountRepository.addMinusAccount(...registerInfo);
-                    console.log(account.name, account.getAccountNumber(), account.getAsset(), account.getDebt(), account.getBalance());
+                    const minusAccount = addMinusAccount(...registerInfo, minusAccounts);
+                    console.log(minusAccount.name, minusAccount.number, minusAccount.asset, minusAccount.debt, minusAccount.getBalance());
                 }
 
                 // 신규 계좌 등록
@@ -61,92 +75,39 @@ const app = function () {
 
             case 2: // 전체계좌 목록 출력
                 console.log("-------------------------------------------------------");
-                console.log("계좌구분 \t 계좌번호 \t 예금주 \t 잔액");
-                console.log(accountRepository.toString(accountRepository.search.byAll()));
+                console.log(" 예금주 \t 계좌번호 \t 예수금 \t 부채 \t 잔고 ");
+                console.log(toString(searchByAll(accounts, minusAccounts)));
                 console.log("-------------------------------------------------------");
                 break;
-                
-            // case 3: // 입금
-            //     // 계좌번호와 입금액 입력 받아 입금 처리
-            //     let inputNo = input("- 계좌번호 : ");
-            //     targetAccount = accountRepository.search.byNumber(inputNo);
-            //     console.log(targetAccount);
-            //     let inputMoney = parseInt(input("- 입금액 : "));
 
-            //     try {
-            //         if (targetAccount) {
-            //             console.log(inputNo, inputMoney);
-            //             targetAccount.asset += inputMoney;
-            //             targetAccount.balance += inputMoney;
-            //             console.log("입금이 성공적으로 완료되었습니다.");
-            //         } else {
-            //             throw new Error("계좌번호가 일치하지 않습니다.");
-            //         }
-            //     } catch (error) {
-            //         console.log(error);
-            //     } finally {
-            //         console.log("입금 기능이 종료되었습니다.");
-            //     }
-            //     break;
             case 3: // 입금
                 let inputNo = input("- 계좌번호 : ");
-                let depositResults = accountRepository.search.byNumber(inputNo);
-                targetAccount = depositResults.length > 0 ? depositResults[0] : null;
                 let inputMoney = parseInt(input("- 입금액 : "));
+                let depositResults = searchByNumber(inputNo, accounts, minusAccounts);
 
                 try {
-                    if (targetAccount) {
-                        targetAccount.asset += inputMoney;
-                        targetAccount.balance += inputMoney;
+                    if (depositResults) {
+                        depositResults.asset += inputMoney;
                         console.log("입금이 성공적으로 완료되었습니다.");
                     } else {
                         throw new Error("계좌번호가 일치하지 않습니다.");
                     }
                 } catch (error) {
-                    console.log(error);
+                    console.error(error.message);
                 } finally {
                     console.log("입금 기능이 종료되었습니다.");
                 }
                 break;
 
-            // case 4: // 출금
-            //     let outputNo = input("- 계좌번호 : ");
-            //     targetAccount = accountRepository.search.byNumber(outputNo);
-            //     console.log(targetAccount);
-            //     let outputMoney = parseInt(input("- 출금액 : "));
-
-
-            //     try {
-            //         if (targetAccount) {
-            //             if (targetAccount.balance - outputMoney >= 0) {
-            //                 console.log(outputNo, outputMoney);
-            //                 targetAccount.asset -= outputMoney;
-            //                 targetAccount.balance -= outputMoney;
-            //                 console.log("출금이 성공적으로 완료되었습니다.");
-            //             } else {
-            //                 throw new Error("계좌 잔고가 출금 희망액보다 적습니다.");
-            //             }
-            //         } else {
-            //             throw new Error("계좌번호가 일치하지 않습니다.");
-            //         }
-            //     } catch (error) {
-            //         console.log(error);
-            //     } finally {
-            //         console.log("출금 기능이 종료되었습니다.");
-            //     }
-            //     break;
-
             case 4: // 출금
                 let outputNo = input("- 계좌번호 : ");
-                let withdrawResults = accountRepository.search.byNumber(outputNo);
-                targetAccount = withdrawResults.length > 0 ? withdrawResults[0] : null;
                 let outputMoney = parseInt(input("- 출금액 : "));
+                let withdrawResults = searchByNumber(outputNo, accounts, minusAccounts);
 
                 try {
-                    if (targetAccount) {
-                        if (targetAccount.balance - outputMoney >= 0) {
-                            targetAccount.asset -= outputMoney;
-                            targetAccount.balance -= outputMoney;
+                    if (withdrawResults) {
+                        if (withdrawResults.getBalance() - outputMoney >= 0) {
+                            withdrawResults.asset -= outputMoney;
                             console.log("출금이 성공적으로 완료되었습니다.");
                         } else {
                             throw new Error("계좌 잔고가 출금 희망액보다 적습니다.");
@@ -155,12 +116,11 @@ const app = function () {
                         throw new Error("계좌번호가 일치하지 않습니다.");
                     }
                 } catch (error) {
-                    console.log(error);
+                    console.error(error.message);
                 } finally {
                     console.log("출금 기능이 종료되었습니다.");
                 }
                 break;
-
 
             case 5: // 계좌번호로 검색
                 let searchNo = input("- 계좌번호 : ");
@@ -172,7 +132,7 @@ const app = function () {
                         throw new Error("일치하는 계좌가 없습니다.");
                     }
                 } catch (error) {
-                    console.log(error);
+                    console.error(error.message);
                 } finally {
                     console.log("계좌번호 검색 기능이 종료되었습니다.");
                 }
@@ -186,7 +146,7 @@ const app = function () {
 
             case 7:
                 console.log(">>> 프로그램을 종료합니다.");
-                accountRepository.terminate();
+                databaseTerminate(accounts, minusAccounts);
                 running = false;
                 break;
             default: console.log("잘못 선택하셨습니다.");
