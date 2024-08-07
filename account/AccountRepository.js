@@ -68,7 +68,7 @@ const searchFromToBalance = function (from, to, ...accountsType) {
     const results = [];
     for (const accounts of accountsType) {
         for (const account of accounts) {
-            if (from <= account.balance && account.balance < to) {
+            if (from <= account.getBalance() && account.getBalance() <= to) {
                 results.push(account);
             }
         }
