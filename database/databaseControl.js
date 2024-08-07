@@ -3,7 +3,6 @@ const path = require("path");
 const { Account } = require("../account/Account");
 const { MinusAccount } = require("../account/MinusAccount");
 const databasePath = path.resolve(__dirname, "ams.json");
-// console.log(databasePath);
 
 const databaseInitialize = function () {
     try {
@@ -25,6 +24,7 @@ const databaseTerminate = function (accounts, minusAccounts) {
     const initJSON = { Account: accounts, MinusAccount: minusAccounts };
     fs.writeFileSync(databasePath, JSON.stringify(initJSON), 'utf8');
 }
+
 
 module.exports = {
     databaseInitialize,

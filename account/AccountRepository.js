@@ -1,7 +1,5 @@
 const { Account } = require("./Account");
 const { MinusAccount } = require("./MinusAccount");
-const fs = require('fs');
-
 /**
  * 계좌 관리 객체
  * 
@@ -12,53 +10,59 @@ const fs = require('fs');
 
 const toString = function (accounts) {
     let accountValue = '';
-    if (accounts.length === 0) {
-        return accountValue;
-    }
+
     // 데이터 추가
     for (const account of accounts) {
-        accountValue += `${account.name}\t${account.number}\t${account.asset}\t`
+        accountValue += `${account.name}\t${account.number}\t${account.asset}\t`;
         if (account.debt) {
             accountValue += `${account.debt}\t`;
         } else {
-            accountValue += `\t\t`
+            accountValue += `\t`;
         }
-        accountValue += `${account.getBalance()}\n`
+        accountValue += `\t${account.getBalance()}\n`;
     }
+
     return accountValue;
 }
 
 //모든 계좌의 총 금액 반환(총예수금)//미수정
-const totalDeposits = (function () {
+const totalBalance = function (...accountsType) {
     const total = 0;
-    return function () {
-        accounts.forEach(total,)
-        total += account["balance"];
-        return total;
-    }
-})();
-
-//미수정
-//계좌 잔액 중에서 전역 극값(최대값/최소값 등등...) 반환
-const balanceGlobalExtrema = (function () {
-    const globalExtrema = function (fn) {
-        if (accounts.length === 0) return null;
-        let extremum = accounts[0].balance;
+    for (const accounts of accountsType) {
         for (const account of accounts) {
-            extremum = fn(extremum, account.balance);
+            total += account.getBalance();
         }
-        return extremum;
-    };
+    }
+    return total;
+}
 
-    const max = () => globalExtrema((extremum, balance) => Math.max(extremum, balance));
-    const min = () => globalExtrema((extremum, balance) => Math.min(extremum, balance));
+//계좌 잔액 중에서 최대값 반환
+const balanceGlobalMax = function (...accountsType) {
+    if (accounts.length === 0) return null;
+    let extremum = accounts[0].balance;
+    for (const accounts of accountsType) {
+        for (const account of accounts) {
+            if (from <= account.balance && account.balance < to) {
+                extremum = Math.max(extremum, balance);
+            }
+        }
+    }
+    return extremum;
+}
 
-    return {
-        max,
-        min,
-    };
-})();
-
+//계좌 잔액 중에서 최소값 반환
+const balanceGlobalMin = function (...accountsType) {
+    if (accounts.length === 0) return null;
+    let extremum = accounts[0].balance;
+    for (const accounts of accountsType) {
+        for (const account of accounts) {
+            if (from <= account.balance && account.balance < to) {
+                extremum = Math.min(extremum, balance);
+            }
+        }
+    }
+    return extremum;
+}
 
 const searchFromToBalance = function (from, to, ...accountsType) {
     const results = [];
@@ -92,7 +96,7 @@ const searchByName = function (name, ...accountsType) {
     return results;
 }
 const searchByNumber = function (number, ...accountsType) {
-    let result = [];
+    const result = [];
     for (const accounts of accountsType) {
         for (const account of accounts) {
             if (number === account.number) {
@@ -100,11 +104,10 @@ const searchByNumber = function (number, ...accountsType) {
             }
         }
     }
-    result = result.pop();
     return result;
 }
 
-//이름을 받아 계좌의 예금주명 수정(계좌 정보를 수정, 개명 등으로 인해 이름을 바꿔야하는 경우)
+//이름을 받아 계좌의 예금주명 수정(계좌 정보를 수정, 개명 등으로 인해 이름을 바꿔야하는 경우)//미수정
 const changeName = function (name, number, newName) {
     for (let i = 0; i < accounts.length; i++) {
         if (accounts[i]["name"] === name && accounts[i]["number"] === number) {
@@ -116,17 +119,17 @@ const changeName = function (name, number, newName) {
 }
 
 //계좌번호를 입력받아 해당 계좌 삭제(작성중)
-const deleteAccount = function (accounts, number) {
-    for (let i = 0; i < accounts.length; i++) {
-        if (accounts[i]["number"] === number) {
-            array.splice(i, 1);
-        } else {
-            throw new error("삭제할 계좌의 계좌번호가 유효하지 않습니다.")
-        }
+const deleteAccount = function (number, ...accountsType) {
+    const deletedArray = [];
+    for(accounts of accountsType)
+    {
+        accounts = accounts.filter(account => number !== account.number);
+        deletedArray.push(accounts);
     }
+    return deletedArray;
 }
 
-//계좌 생성
+//입출금 계좌 생성
 const addAccount = function (name, password, asset, accounts) {
     const account = new Account(name, undefined, password, asset);
     //오류 검출 함수
@@ -134,7 +137,7 @@ const addAccount = function (name, password, asset, accounts) {
     return account;
 }
 
-//계좌 생성
+//마이너스 계좌 생성
 const addMinusAccount = function (name, password, asset, debt, minusAccounts) {
     const account = new MinusAccount(name, undefined, password, asset, debt);
     // 오류 검출 함수
@@ -144,7 +147,6 @@ const addMinusAccount = function (name, password, asset, debt, minusAccounts) {
 
 module.exports = {
     toString,
-    totalDeposits,
     searchFromToBalance,
     searchByAll,
     searchByName,
@@ -153,6 +155,9 @@ module.exports = {
     deleteAccount,
     addAccount,
     addMinusAccount,
+    totalBalance,
+    balanceGlobalMax,
+    balanceGlobalMin,
 };
 
 
