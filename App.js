@@ -4,26 +4,87 @@
  * 작성자 : 조영우
  */
 
-const { toString,
-    totalDeposits,
-    searchFromToBalance,
-    searchByAll,
-    searchByName,
-    searchByNumber,
-    changeName,
-    deleteAccount,
-    addAccount,
-    addMinusAccount } = require("./account/AccountRepository");
+const { toString, totalDeposits, searchFromToBalance, searchByAll, searchByName, searchByNumber, changeName, deleteAccount, addAccount, addMinusAccount } = require("./account/AccountRepository");
 const { input } = require("./module/pythonic-input/pythonicInput");
 const { databaseInitialize, databaseTerminate } = require("./database/databaseControl");
-1
+const { printMenu, printSearchBy, printAccountType, printAccountList, } = require("./interface");
 
-// 메뉴 출력
-const printMenu = function () {
-    console.log("--------------------------------------------------------------------");
-    console.log("1.계좌등록 | 2.계좌목록 | 3.예금 | 4.출금 | 5.검색 | 6.삭제 | 7.종료");
-    console.log("--------------------------------------------------------------------");
-}
+// // 메뉴 출력
+// const printMenu = function () {
+//     console.log("--------------------------------------------------------------------");
+//     console.log("1.계좌등록 | 2.계좌목록 | 3.예금 | 4.출금 | 5.검색 | 6.삭제 | 7.종료");
+//     console.log("--------------------------------------------------------------------");
+// }
+
+// /** 
+//  * printAccountType
+//  * ================
+//  * 
+//  * 설명: 계좌 종류를 아래와 같이 프린트합니다.
+//  * 
+//  * --------------------------------
+//  * 
+//  * ```
+//  * 
+//  * --------------------------------
+//  * 1. 입출금계좌 | 2. 마이너스 계좌
+//  * --------------------------------
+//  * 
+//  * ```
+//  */
+// const printAccountType = function () {
+//     console.log("■ 등록 계좌 종류 선택");
+//     console.log("--------------------------------");
+//     console.log("1. 입출금계좌 | 2. 마이너스 계좌");
+//     console.log("--------------------------------");
+// }
+
+
+// /** 
+//  * printSearchBy
+//  * =============
+//  * 설명: 계좌 검색 기준을 아래와 같이 프린트합니다.
+//  * 
+//  * --------------------------------
+//  * ```
+//  * 
+//  * ■ 등록 계좌 종류 선택
+//  * ---------------------
+//  * 1. 이름 | 2. 계좌번호
+//  * ---------------------
+//  * 
+//  * ```
+//  */
+// const printSearchBy = function () {
+//     console.log("■ 등록 계좌 종류 선택");
+//     console.log("---------------------");
+//     console.log("1. 이름 | 2. 계좌번호");
+//     console.log("---------------------");
+// }
+
+// /**
+//  * printAccountType
+//  * ================
+//  * 설명: 파라미터의 결과값에 따라 예금주, 계좌번호, 예수금, 부채, 잔고를 순차적으로 ```console.log()``` 합니다.
+//  * 
+//  * --------------------------------
+//  * 
+//  * ```
+//  * 
+//  * -----------------------------------------------------
+//  * 예금주        계좌번호        예수금   부채     잔고 
+//  * 엄준식    123-4567-7898-76    10000            10000
+//  * 김찬호    987-6543-2123-45    1000    10000    -9000
+//  * -----------------------------------------------------
+//  * 
+//  * ```
+//  */
+// const printAccountList = function (targetAccount) {
+//     console.log("-------------------------------------------------------");
+//     console.log(" 예금주 \t 계좌번호 \t 예수금 \t 부채 \t 잔고 ");
+//     console.log(targetAccount);
+//     console.log("-------------------------------------------------------");
+// }
 
 const app = function () {
     const { accounts, minusAccounts } = databaseInitialize();
@@ -37,19 +98,15 @@ const app = function () {
     while (running) {
         printMenu();
         let menuNum = parseInt(input("> "));
+        let no = null;
         switch (menuNum) {
             case 1:
-                console.log("■ 등록 계좌 종류 선택");
-                const header =
-                    "--------------------------------\n" +
-                    "1. 입출금계좌 | 2. 마이너스 계좌\n" +
-                    "--------------------------------";
-
-                console.log(header);
-
-
-                // let account = null;
-                const no = parseInt(input());
+                // <예시>
+                // --------------------------------
+                // 1. 입출금계좌 | 2. 마이너스 계좌
+                // --------------------------------
+                printAccountType();//계좌 타입 출력
+                no = parseInt(input());
 
                 let registerInfo = [];
                 registerInfo.push(input("이름: "));
@@ -70,13 +127,15 @@ const app = function () {
                 // 신규 계좌 등록
                 console.log("신규 계좌 등록이 정상적으로 완료되었습니다.");
                 break;
-            //완료
 
             case 2: // 전체계좌 목록 출력
-                console.log("-------------------------------------------------------");
-                console.log(" 예금주 \t 계좌번호 \t 예수금 \t 부채 \t 잔고 ");
-                console.log(toString(searchByAll(...allAccounts)));
-                console.log("-------------------------------------------------------");
+                // <예시>
+                // -----------------------------------------------------
+                // 예금주        계좌번호        예수금   부채     잔고 
+                // 엄준식    123-4567-7898-76    10000            10000
+                // 김찬호    987-6543-2123-45    1000    10000    -9000
+                // -----------------------------------------------------
+                printAccountList(toString(searchByAll(...allAccounts)));
                 break;
 
             case 3: // 입금
@@ -122,8 +181,21 @@ const app = function () {
                 break;
 
             case 5: // 계좌번호로 검색
-                let searchNo = input("- 계좌번호 : ");
-                const resultAccount = searchByNumber(searchNo, ...allAccounts);
+                // <예시>
+                // ---------------------
+                // 1. 이름 | 2. 계좌번호
+                // --------------------- 
+                printSearchBy();
+
+                no = parseInt(input());
+                let resultAccount = null;
+                if (no === 1){
+                    let searchName = input("- 이름 : ");
+                    resultAccount = searchByName(searchName, ...allAccounts);
+                } else {
+                    let searchNo = input("- 계좌번호 : ");
+                    resultAccount = searchByNumber(searchNo, ...allAccounts);
+                }
                 try {
                     if (resultAccount) {
                         console.log(toString(resultAccount));
