@@ -8,21 +8,24 @@ const { MinusAccount } = require("./MinusAccount");
  * 설명: 계좌 생성 시 파일 입출력을 통해 계좌를 저장 및 관리합니다.
  */
 
-const toString = function (accounts) {
-    let accountValue = '';
+const showAccountInfo = function (account) {
+    let accountString = `${account.name}\t${account.number}\t${account.asset}\t`;
+    if (account.debt) {
+        accountString += `${account.debt}\t`;
+    } else {
+        accountString += `\t`;
+    }
+    accountString += `\t${account.getBalance()}\n`;
+    return accountString;
+}
 
+const toString = function (accounts) {
+    let accountString = '';
     // 데이터 추가
     for (const account of accounts) {
-        accountValue += `${account.name}\t${account.number}\t${account.asset}\t`;
-        if (account.debt) {
-            accountValue += `${account.debt}\t`;
-        } else {
-            accountValue += `\t`;
-        }
-        accountValue += `\t${account.getBalance()}\n`;
+        accountString = showAccountInfo(account);
     }
-
-    return accountValue;
+    return accountString;
 }
 
 //모든 계좌의 총 금액 반환(총예수금)//미수정
@@ -146,6 +149,7 @@ const addMinusAccount = function (name, password, asset, debt, minusAccounts) {
 }
 
 module.exports = {
+    showAccountInfo,
     toString,
     searchFromToBalance,
     searchByAll,
