@@ -4,13 +4,12 @@
  * 작성자 : 조영우
  */
 
-const { toString, totalDeposits, searchFromToBalance, searchByAll, searchByName, searchByNumber, changeName, deleteAccount, addAccount, addMinusAccount } = require("./account/AccountRepository");
-const { input } = require("./module/pythonic-input/pythonicInput");
-const { databaseInitialize, databaseTerminate } = require("./database/databaseControl");
-const { printInit, printMenu, printSearchBy, printAccountType, printAccountList, } = require("./interface");
-const { ValidationError, NoSuchAccountError, WithdrawalBalanceError, NoSuchMenuSelectError } = require("./CustomError.js");
-const { validNumberInput, validPasswordInput, validMoneyInput } = require("./validInput.js")
-const { registerAccount } = require("./registerAccount.js")
+const { toString, showAccountInfo, searchFromToBalance, searchByAll, searchByName, searchByNumber, deleteAccount, addAccount, addMinusAccount } = require("./module/internal/account/AccountRepository.js");
+const { input } = require("./module/external/pythonic-input/pythonicInput.js");
+const { databaseInitialize, databaseTerminate } = require("./database/databaseControl.js");
+const { printInit, printMenu, printSearchBy, printAccountType, printAccountList, } = require("./module/internal/interface/interface.js");
+const { NoSuchAccountError, WithdrawalBalanceError, NoSuchMenuSelectError } = require("./module/internal/error/CustomError.js");
+const { validNumberInput, validPasswordInput, validMoneyInput } = require("./module/internal/input-validation/validInput.js")
 
 const [REGISTERACCOUNT, LOGACCOUNT, DEPOSIT, WITHDRAW, SEARCH, DELETEACCOUNT, TERMINATE] = [1, 2, 3, 4, 5, 6, 7];
 const [BYNAME, BYNUMBER, BYBALANCE] = [1, 2, 3];
@@ -31,7 +30,9 @@ const app = function () {
         switch (menuNum) {
             case REGISTERACCOUNT:
                 printAccountType();//계좌 타입 출력
+
                 no = parseInt(input());
+
                 //PREVIOUSMENU 선택 시 이전 화면으로 돌아감
                 if (no === PREVIOUSMENU) break;
 
@@ -59,11 +60,19 @@ const app = function () {
                     continue;
                 }
 
-                break;
+                break;//REGISTERACCOUNT 끝
+
+
 
             case LOGACCOUNT: // 전체계좌 목록 출력
-                printAccountList(toString(searchByAll(...allAccounts)));
-                break;
+                try {
+                    printAccountList(toString(searchByAll(...allAccounts)));
+                } catch (error) {
+                    console.error(error.message);
+                }
+                break;//LOGACCOUNT 끝
+
+
 
             case DEPOSIT: // 입금
                 try {
@@ -80,15 +89,16 @@ const app = function () {
                 } catch (error) {
                     console.error(error.message);
                 }
-                break;
+                break;//DEPOSIT 끝
+
 
 
             case WITHDRAW: // 출금
-                let outputNo = validNumberInput();
-                let outputMoney = validMoneyInput("출금액: ");
-                let withdrawResults = searchByNumber(outputNo, ...allAccounts);
-
                 try {
+                    let outputNo = validNumberInput();
+                    let outputMoney = validMoneyInput("출금액: ");
+                    let withdrawResults = searchByNumber(outputNo, ...allAccounts);
+
                     if (withdrawResults) {
                         if (withdrawResults.getBalance() - outputMoney >= 0) {
                             withdrawResults.asset -= outputMoney;
@@ -102,7 +112,9 @@ const app = function () {
                 } catch (error) {
                     console.error(error.message);
                 }
-                break;
+                break;//WITHDRAW 끝
+
+
 
             case SEARCH:
                 printSearchBy();
@@ -117,7 +129,7 @@ const app = function () {
                     } else if (no === BYNUMBER) {
                         resultAccount = searchByNumber(validNumberInput(), ...allAccounts);//테스트 validNumberInput
                     } else if (no === BYBALANCE) {
-                        resultAccount = searchFromToBalance(input("- 시작 잔고: "), input("- 끝 잔고: "), ...allAccounts);
+                        resultAccount = searchFromToBalance(validMoneyInput("시작 잔고: "), validMoneyInput("끝 잔고: "), ...allAccounts);
                     } else {
                         throw new NoSuchMenuSelectError();
                     }
@@ -131,20 +143,26 @@ const app = function () {
                     console.error(error.message);
                     break;
                 }
-                break;
+                break;//SEARCH 끝
+
+
 
             case DELETEACCOUNT:
                 let deleteNum = validNumberInput();
                 console.log(deleteNum);
                 allAccounts = deleteAccount(deleteNum, ...allAccounts);
                 console.log("계좌 삭제가 성공적으로 완료되었습니다.");
-                break;
+                break;//DELETEACCOUNT 끝
+
+
 
             case TERMINATE:
                 console.log(">>> 프로그램을 종료합니다.");
                 databaseTerminate(accounts, minusAccounts);
                 running = false;
-                break;
+                break; //TERMINATE 끝
+
+
 
             default: console.log("잘못 선택하셨습니다.");
         }
@@ -152,8 +170,6 @@ const app = function () {
 }
 
 app();
-
-// validNumberInput();
 
 
 //정규식 써보면 더 좋은뎅

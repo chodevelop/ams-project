@@ -62,7 +62,7 @@ const printMenu = function () {
 const printAccountType = function () {
     console.log("■ 등록 계좌 종류 선택");
     console.log("-------------------------------------------------");
-    console.log("1. 입출금계좌 | 2. 마이너스 계좌 | 9. [이전 메뉴]");
+    console.log("1. 입출금계좌 | 2. 마이너스 계좌 | 0. [이전 메뉴]");
     console.log("-------------------------------------------------");
 }
 

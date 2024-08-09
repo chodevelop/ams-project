@@ -9,7 +9,7 @@
 const { Account } = require("../Account");
 const { MinusAccount } = require("../MinusAccount");
 const { accountRepository } = require("../accountRepository")
-const { input } = require("../pythonic-input/pythonicInput");
+const { input } = require("../external/pythonic-input/pythonicInput.js");
 
 // 메뉴 출력
 const printMenu = function () {
