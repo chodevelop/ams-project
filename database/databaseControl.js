@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
-const { Account } = require("../account/Account");
-const { MinusAccount } = require("../account/MinusAccount");
+const { Account } = require("../module/internal/account/Account");
+const { MinusAccount } = require("../module/internal/account/MinusAccount");
 const databasePath = path.resolve(__dirname, "ams.json");
 
 const databaseInitialize = function () {
