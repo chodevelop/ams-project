@@ -170,6 +170,3 @@ const app = function () {
 }
 
 app();
-
-
-//정규식 써보면 더 좋은뎅
