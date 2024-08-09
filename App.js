@@ -30,9 +30,7 @@ const app = function () {
         switch (menuNum) {
             case REGISTERACCOUNT:
                 printAccountType();//계좌 타입 출력
-
                 no = parseInt(input());
-
                 //PREVIOUSMENU 선택 시 이전 화면으로 돌아감
                 if (no === PREVIOUSMENU) break;
 
@@ -62,17 +60,15 @@ const app = function () {
 
                 break;//REGISTERACCOUNT 끝
 
-
-
             case LOGACCOUNT: // 전체계좌 목록 출력
                 try {
+                    console.log(accounts);
+                    console.log(minusAccounts);
                     printAccountList(toString(searchByAll(...allAccounts)));
                 } catch (error) {
                     console.error(error.message);
                 }
                 break;//LOGACCOUNT 끝
-
-
 
             case DEPOSIT: // 입금
                 try {
@@ -90,8 +86,6 @@ const app = function () {
                     console.error(error.message);
                 }
                 break;//DEPOSIT 끝
-
-
 
             case WITHDRAW: // 출금
                 try {
@@ -113,8 +107,6 @@ const app = function () {
                     console.error(error.message);
                 }
                 break;//WITHDRAW 끝
-
-
 
             case SEARCH:
                 printSearchBy();
@@ -145,24 +137,32 @@ const app = function () {
                 }
                 break;//SEARCH 끝
 
-
-
             case DELETEACCOUNT:
-                let deleteNum = validNumberInput();
-                console.log(deleteNum);
-                allAccounts = deleteAccount(deleteNum, ...allAccounts);
-                console.log("계좌 삭제가 성공적으로 완료되었습니다.");
+                try {
+                    let deleteNum = validNumberInput();
+                    console.log(deleteNum);
+
+                    // deleteAccount를 호출하여 업데이트된 배열들을 가져옴
+                    const updatedAccountsList = deleteAccount(deleteNum, ...allAccounts);
+
+                    // allAccounts 내의 각 배열의 원본 참조를 업데이트된 내용으로 덮어씀
+                    for (let i = 0; i < updatedAccountsList.length; i++) {
+                        // 원본 배열의 내용을 빈 배열로 만듦
+                        allAccounts[i].length = 0;
+                        // 업데이트된 내용을 원본 배열에 다시 추가
+                        allAccounts[i].push(...updatedAccountsList[i]);
+                    }
+                    console.log("계좌 삭제가 성공적으로 완료되었습니다.");
+                } catch (error) {
+                    console.error(error.message);
+                }
                 break;//DELETEACCOUNT 끝
-
-
 
             case TERMINATE:
                 console.log(">>> 프로그램을 종료합니다.");
                 databaseTerminate(accounts, minusAccounts);
                 running = false;
                 break; //TERMINATE 끝
-
-
 
             default: console.log("잘못 선택하셨습니다.");
         }

@@ -23,7 +23,13 @@ const toString = function (accounts) {
     let accountString = '';
     // 데이터 추가
     for (const account of accounts) {
-        accountString = showAccountInfo(account);
+        accountString += Object.keys(account)
+            .filter(key => key !== 'password')// 'password' 키를 제외
+            .map(key => account[key])// 각 키의 값을 배열로 변환
+            .concat(account.debt ? '' : '\t')
+            .concat(account.getBalance())
+            .join('\t');
+        accountString += `\n`;// 값들을 공백으로 연결하여 하나의 문자열로 결합
     }
     return accountString;
 }
@@ -67,48 +73,31 @@ const balanceGlobalMin = function (...accountsType) {
     return extremum;
 }
 
-const searchFromToBalance = function (from, to, ...accountsType) {
+
+//모든 검색 기능의 추상화 함수(직접적으로 모듈화하지 않음!)
+const searchAccounts = function (predicate, ...accountsType) {
     const results = [];
     for (const accounts of accountsType) {
         for (const account of accounts) {
-            if (from <= account.getBalance() && account.getBalance() <= to) {
+            if (predicate(account)) {
                 results.push(account);
             }
         }
     }
     return results;
 }
-const searchByAll = function (...accountsType) {
-    const results = [];
-    for (const accounts of accountsType) {
-        for (const account of accounts) {
-            results.push(account);
-        }
-    }
-    return results;
-}
-const searchByName = function (name, ...accountsType) {
-    const results = [];
-    for (const accounts of accountsType) {
-        for (const account of accounts) {
-            if (name === account.name) {
-                results.push(account);
-            }
-        }
-    }
-    return results;
-}
-const searchByNumber = function (number, ...accountsType) {
-    const result = [];
-    for (const accounts of accountsType) {
-        for (const account of accounts) {
-            if (number === account.number) {
-                result.push(account);
-            }
-        }
-    }
-    return result;
-}
+
+const searchFromToBalance = (from, to, ...accountsType) =>
+    searchAccounts(account => from <= account.getBalance() && account.getBalance() <= to, ...accountsType);
+
+const searchByAll = (...accountsType) =>
+    searchAccounts(() => true, ...accountsType);
+
+const searchByName = (name, ...accountsType) =>
+    searchAccounts(account => account.name === name, ...accountsType);
+
+const searchByNumber = (number, ...accountsType) =>
+    searchAccounts(account => account.number === number, ...accountsType);
 
 //이름을 받아 계좌의 예금주명 수정(계좌 정보를 수정, 개명 등으로 인해 이름을 바꿔야하는 경우)//미수정
 const changeName = function (name, number, newName) {
@@ -123,13 +112,9 @@ const changeName = function (name, number, newName) {
 
 //계좌번호를 입력받아 해당 계좌 삭제(작성중)
 const deleteAccount = function (number, ...accountsType) {
-    const deletedArray = [];
-    for(accounts of accountsType)
-    {
-        accounts = accounts.filter(account => number !== account.number);
-        deletedArray.push(accounts);
-    }
-    return deletedArray;
+    return accountsType.map(accounts =>
+        accounts.filter(account => account.number !== number)
+    );
 }
 
 //입출금 계좌 생성
@@ -163,9 +148,3 @@ module.exports = {
     balanceGlobalMax,
     balanceGlobalMin,
 };
-
-
-//입출금 계좌를 입출금 계좌대로
-//마이너스 계좌는 마이너스 계좌대로
-//다차원 배열을 이용해서 구현해봐라(선택).
-//일단은 통합관리를 목표로 하라.

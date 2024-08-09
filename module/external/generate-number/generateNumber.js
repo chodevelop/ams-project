@@ -20,13 +20,12 @@ const generateNumberModule = (...interHypens) => {
 const generateNumberRegExp = (...interHypens) => {
     let regExp = "";
     for (const interHypen of interHypens) {
-        regExp += `\d{${interHypen}}-`
+        regExp += `\\d{${interHypen}}-`
     }
     regExp = regExp.slice(0, -1);
 
     return new RegExp(regExp);
 }
-
 
 module.exports = {
     generateNumberModule,
